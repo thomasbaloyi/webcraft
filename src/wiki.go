@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 )
 
@@ -11,10 +13,19 @@ type Page struct {
 }
 
 func main() {
-	p1 := &Page{Title: "TestPage", Body: []byte("This is a sample Page.")}
-	p1.save()
-	p2, _ := loadPage("TestPage")
-	fmt.Println(string(p2.Body))
+	http.HandleFunc("/view/", viewHandler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len("/view/"):]
+	p, _ := loadPage(title)
+	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
+	log.Print("View handler served")
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
 }
 
 func (p *Page) save() error {
